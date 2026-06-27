@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resespel 🚗</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+    :root {
+      --sky: #3B9EFF;
+      --sun: #FFD94A;
+      --road: #2D2D2D;
+      --grass: #5EC96E;
+      --card: #FFFDF5;
+      --accent: #FF6B6B;
+      --purple: #A78BFA;
+      --text: #1a1a2e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--sky);
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--text);
+    }
+
+    /* Sky + road scene */
+    .scene {
+      position: relative;
+      background: linear-gradient(180deg, #87CEEB 0%, #B0E0FF 60%, var(--grass) 60%, var(--grass) 75%, var(--road) 75%);
+      height: 180px;
+      overflow: hidden;
+    }
+
+    .sun {
+      position: absolute;
+      top: 18px; right: 60px;
+      width: 54px; height: 54px;
+      background: var(--sun);
+      border-radius: 50%;
+      box-shadow: 0 0 24px 8px #FFE97A88;
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+    .cloud {
+      position: absolute;
+      background: white;
+      border-radius: 50px;
+      opacity: 0.9;
+      animation: drift linear infinite;
+    }
+    .cloud::before, .cloud::after {
+      content:''; position:absolute; background:white; border-radius:50%;
+    }
+    .cloud.c1 { width:90px;height:28px; top:22px; left:-100px; animation-duration:22s; animation-delay:0s; }
+    .cloud.c1::before { width:44px;height:44px; top:-22px; left:14px; }
+    .cloud.c1::after  { width:30px;height:30px; top:-14px; left:44px; }
+    .cloud.c2 { width:70px;height:22px; top:50px; left:-100px; animation-duration:30s; animation-delay:-10s; }
+    .cloud.c2::before { width:32px;height:32px; top:-16px; left:10px; }
+    .cloud.c2::after  { width:24px;height:24px; top:-10px; left:34px; }
+    @keyframes drift { from{left:-120px} to{left:110%} }
+
+    /* Car */
+    .car {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 3rem;
+      animation: bounce 1.8s ease-in-out infinite;
+      filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
+    }
+    @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-6px)} }
+
+    /* Road dashes */
+    .road-line {
+      position: absolute;
+      bottom: 22px;
+      height: 5px; width: 44px;
+      background: var(--sun);
+      border-radius: 3px;
+    }
+    .road-line.r1 { left: 8%;  animation: roadmove 1.2s linear infinite; animation-delay: 0s; }
+    .road-line.r2 { left: 28%; animation: roadmove 1.2s linear infinite; animation-delay: -0.3s; }
+    .road-line.r3 { left: 52%; animation: roadmove 1.2s linear infinite; animation-delay: -0.6s; }
+    .road-line.r4 { left: 74%; animation: roadmove 1.2s linear infinite; animation-delay: -0.9s; }
+    @keyframes roadmove { from{transform:translateX(0)} to{transform:translateX(-40px)} }
+
+    /* Title */
+    h1 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.2rem;
+      text-align: center;
+      color: white;
+      text-shadow: 3px 3px 0 #1a1a2e44;
+      padding: 20px 16px 4px;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      text-align:center;
+      color: #e0f2ff;
+      font-size: 0.95rem;
+      padding-bottom: 20px;
+      font-weight: 600;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 16px 16px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      background: rgba(0,0,0,0.22);
+      border: 2px solid rgba(255,255,255,0.5);
+      color: white;
+      padding: 8px 18px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 800;
+      transition: all 0.2s;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+    .tab:hover { background: rgba(0,0,0,0.35); border-color: white; }
+    .tab.active {
+      background: white;
+      color: var(--sky);
+      border-color: white;
+      text-shadow: none;
+    }
+
+    /* Content area */
+    .content {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 0 16px 40px;
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+
+    /* ── SPION-SPELET ── */
+    .spy-card {
+      text-align: center;
+    }
+    .spy-emoji { font-size: 3rem; margin-bottom: 8px; }
+    .spy-title { font-family:'Fredoka One',cursive; font-size:1.4rem; color: var(--accent); margin-bottom:4px; }
+    .spy-desc { font-size:0.88rem; color:#555; margin-bottom:16px; }
+    .spy-result {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 12px 0;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .spy-result .role { font-size:1.5rem; font-weight:800; color:white; font-family:'Fredoka One',cursive; }
+    .spy-result .location { font-size:1.1rem; color:#e0d0ff; margin-top:4px; }
+    .btn {
+      display: inline-block;
+      padding: 12px 28px;
+      border-radius: 50px;
+      border: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    }
+    .btn:active { transform: scale(0.95); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+    .btn-red { background: var(--accent); color:white; }
+    .btn-green { background: var(--grass); color:white; }
+    .btn-blue { background: var(--sky); color:white; }
+    .btn-purple { background: var(--purple); color:white; }
+
+    /* ── 20 FRÅGOR ── */
+    .guess-word {
+      font-family:'Fredoka One',cursive;
+      font-size:2rem;
+      color: var(--accent);
+      text-align:center;
+      margin: 8px 0 4px;
+    }
+    .guess-category {
+      text-align:center;
+      font-size:0.85rem;
+      color:#888;
+      margin-bottom:16px;
+    }
+    .questions-list {
+      list-style: none;
+      margin-bottom: 12px;
+    }
+    .questions-list li {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 0;
+      border-bottom:1px solid #f0ede0;
+      font-size:0.9rem;
+    }
+    .q-num {
+      background: var(--sky);
+      color: white;
+      border-radius: 50%;
+      width:22px; height:22px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.75rem;
+      font-weight:800;
+      flex-shrink:0;
+    }
+    .answer-btns { display:flex; gap:8px; margin-bottom:12px; }
+    .answer-btns button {
+      flex:1; padding:10px; border:2px solid; border-radius:12px;
+      font-family:'Nunito',sans-serif; font-weight:700; font-size:0.9rem; cursor:pointer;
+      transition: all 0.15s;
+    }
+    .yes-btn { background:#e8fff0; color:#2d9c4a; border-color:#2d9c4a; }
+    .yes-btn:hover { background:#2d9c4a; color:white; }
+    .no-btn { background:#fff0f0; color:var(--accent); border-color:var(--accent); }
+    .no-btn:hover { background:var(--accent); color:white; }
+    .maybe-btn { background:#f5f0ff; color:#7c3aed; border-color:#7c3aed; }
+    .maybe-btn:hover { background:#7c3aed; color:white; }
+
+    #currentQ {
+      width:100%; border:2px solid #ddd; border-radius:12px;
+      padding:10px 14px; font-family:'Nunito',sans-serif; font-size:0.95rem;
+      margin-bottom:8px; resize:none;
+    }
+    #currentQ:focus { outline:none; border-color:var(--sky); }
+
+    /* ── RESA BINGO ── */
+    .bingo-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .bingo-cell {
+      background: white;
+      border: 2px solid #e8e4d4;
+      border-radius: 10px;
+      padding: 8px 4px;
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #444;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 58px;
+      display: flex; align-items:center; justify-content:center;
+      flex-direction: column;
+      gap: 2px;
+      line-height: 1.2;
+      user-select: none;
+    }
+    .bingo-cell:hover { border-color: var(--sky); background:#f0f8ff; }
+    .bingo-cell.checked {
+      background: linear-gradient(135deg, var(--grass), #3bb55a);
+      border-color: var(--grass);
+      color: white;
+      transform: scale(0.97);
+    }
+    .bingo-cell .cell-emoji { font-size:1.3rem; }
+    .bingo-count {
+      text-align:center;
+      font-family:'Fredoka One',cursive;
+      font-size:1.1rem;
+      color: var(--sky);
+    }
+
+    /* ── SLUMPA UTMANING ── */
+    .challenge-display {
+      background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      min-height: 120px;
+      display: flex; align-items:center; justify-content:center; flex-direction:column;
+      margin-bottom:16px;
+    }
+    .challenge-emoji { font-size:2.5rem; }
+    .challenge-text { font-family:'Fredoka One',cursive; font-size:1.2rem; color:white; margin-top:8px; line-height:1.4; }
+
+    /* ── TRIVIA ── */
+    .trivia-q { font-weight:800; font-size:1rem; margin-bottom:14px; line-height:1.4; }
+    .trivia-options { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+    .trivia-opt {
+      padding:12px 16px;
+      border:2px solid #e0ddd0;
+      border-radius:12px;
+      background:white;
+      cursor:pointer;
+      font-family:'Nunito',sans-serif;
+      font-weight:600;
+      font-size:0.92rem;
+      text-align:left;
+      transition: all 0.15s;
+    }
+    .trivia-opt:hover { border-color:var(--sky); background:#f0f8ff; }
+    .trivia-opt.correct { background:#e8fff0; border-color:#2d9c4a; color:#1a6630; }
+    .trivia-opt.wrong   { background:#fff0f0; border-color:var(--accent); color:#c0392b; }
+    .trivia-score { font-family:'Fredoka One',cursive; font-size:1.2rem; text-align:center; color:var(--purple); margin-bottom:10px; }
+    .trivia-feedback { text-align:center; font-size:0.9rem; min-height:20px; margin-bottom:8px; font-weight:700; }
+
+    /* Win banner */
+    .bingo-banner {
+      background: linear-gradient(135deg, var(--sun), #FF9F43);
+      border-radius:14px;
+      padding:14px;
+      text-align:center;
+      font-family:'Fredoka One',cursive;
+      font-size:1.3rem;
+      color: var(--text);
+      margin-bottom:12px;
+      display:none;
+    }
+    .bingo-banner.show { display:block; animation: pop 0.4s cubic-bezier(.36,1.6,.6,1); }
+    @keyframes pop { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+    .center { text-align:center; }
+    .mt8 { margin-top:8px; }
+    .mt12 { margin-top:12px; }
+
+    /* scroll hint */
+    .section-label {
+      font-family:'Fredoka One',cursive;
+      font-size:1rem;
+      color:rgba(255,255,255,0.75);
+      text-align:center;
+      margin-bottom:6px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Scene -->
+<div class="scene">
+  <div class="sun"></div>
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="road-line r1"></div>
+  <div class="road-line r2"></div>
+  <div class="road-line r3"></div>
+  <div class="road-line r4"></div>
+  <div class="car">🚗</div>
+</div>
+
+<h1>Resespel 🎮</h1>
+<p class="subtitle">Roliga spel för hela resan</p>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('bingo')">🎯 Bingo</button>
+  <button class="tab" onclick="switchTab('spy')">🕵️ Spionen</button>
+  <button class="tab" onclick="switchTab('twenty')">❓ 20 Frågor</button>
+  <button class="tab" onclick="switchTab('challenge')">🎲 Utmaning</button>
+  <button class="tab" onclick="switchTab('trivia')">🧠 Trivia</button>
+  <button class="tab" onclick="switchTab('word')">🔤 Ordsallad</button>
+  <button class="tab" onclick="switchTab('never')">🙈 Aldrig har jag</button>
+  <button class="tab" onclick="switchTab('draw')">✏️ Rita det!</button>
+</div>
+
+<div class="content">
+
+  <!-- ───── BINGO ───── -->
+  <div class="panel active" id="panel-bingo">
+    <div class="card">
+      <div style="text-align:center;margin-bottom:12px">
+        <div style="font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--sky)">🎯 Resebingo</div>
+        <div style="font-size:0.85rem;color:#777">Tryck på det du ser! Få 4 i rad = BINGO!</div>
+      </div>
+      <div class="bingo-banner" id="bingo-banner">🎉 BINGO! Grattis! 🎉</div>
+      <div class="bingo-grid" id="bingo-grid"></div>
+      <div class="bingo-count" id="bingo-count">0 / 16 markerade</div>
+      <div class="center mt12">
+        <button class="btn btn-blue" onclick="resetBingo()">🔄 Nytt spel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── SPY ───── -->
+  <div class="panel" id="panel-spy">
+    <div class="card spy-card">
+      <div class="spy-emoji">🕵️</div>
+      <div class="spy-title">Vem är Spionen?</div>
+      <div class="spy-desc">Alla får se platsen – utom spionen! Ställ frågor för att avslöja vem som inte vet var ni "är".</div>
+      <div class="spy-result" id="spy-result">
+        <div>
+          <div class="role" style="color:#ccc">Tryck för att börja</div>
+        </div>
+      </div>
+      <div style="font-size:0.8rem;color:#aaa;margin-bottom:12px">Visa bara för en person i taget!</div>
+
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px">
+        <span style="font-weight:700;font-size:0.9rem">Antal spelare:</span>
+        <button class="btn" style="background:#eee;color:#333;padding:6px 14px;font-size:1rem" onclick="changePlayerCount(-1)">−</button>
+        <span id="player-count-display" style="font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--purple);min-width:24px;text-align:center">4</span>
+        <button class="btn" style="background:#eee;color:#333;padding:6px 14px;font-size:1rem" onclick="changePlayerCount(1)">+</button>
+      </div>
+
+      <button class="btn btn-purple" onclick="drawSpy()">🎴 Dra kort</button>
+      <div id="spy-players" style="margin-top:16px"></div>
+    </div>
+    <div class="card">
+      <div style="font-weight:800;margin-bottom:8px">Hur man spelar:</div>
+      <ol style="padding-left:20px;font-size:0.88rem;line-height:1.8;color:#555">
+        <li>Alla drar ett kort en i taget</li>
+        <li>Ställ frågor om platsen runt bordet</li>
+        <li>Spionen försöker låtsas utan att avslöjas</li>
+        <li>Rösta – vem är spionen? Spionen kan vinna genom att gissa platsen!</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ───── 20 FRÅGOR ───── -->
+  <div class="panel" id="panel-twenty">
+    <div class="card">
+      <div style="text-align:center;margin-bottom:4px;font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--accent)">❓ 20 Frågor</div>
+      <div style="text-align:center;font-size:0.83rem;color:#888;margin-bottom:14px">En person tänker på en sak – resten ställer ja/nej-frågor!</div>
+
+      <div id="twenty-setup">
+        <div style="margin-bottom:10px;font-weight:700">Välj kategori:</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" id="cat-btns">
+          <button class="trivia-opt" style="flex:1;min-width:100px" onclick="startTwenty('djur')">🐾 Djur</button>
+          <button class="trivia-opt" style="flex:1;min-width:100px" onclick="startTwenty('mat')">🍕 Mat</button>
+          <button class="trivia-opt" style="flex:1;min-width:100px" onclick="startTwenty('platser')">🗺️ Platser</button>
+          <button class="trivia-opt" style="flex:1;min-width:100px" onclick="startTwenty('föremål')">🔑 Föremål</button>
+          <button class="trivia-opt" style="flex:1;min-width:100px" onclick="startTwenty('random')">🎲 Slumpa</button>
+        </div>
+      </div>
+
+      <div id="twenty-game" style="display:none">
+        <div class="guess-word" id="twenty-word"></div>
+        <div class="guess-category" id="twenty-cat"></div>
+        <div style="font-size:0.85rem;font-weight:700;color:#555;margin-bottom:6px">Logg (<span id="q-count">0</span>/20 frågor):</div>
+        <ul class="questions-list" id="q-list"></ul>
+        <textarea id="currentQ" rows="2" placeholder="Skriv din fråga här..."></textarea>
+        <div class="answer-btns">
+          <button class="yes-btn" onclick="logAnswer('Ja ✅')">Ja</button>
+          <button class="no-btn" onclick="logAnswer('Nej ❌')">Nej</button>
+          <button class="maybe-btn" onclick="logAnswer('Kanske 🤔')">Kanske</button>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-green" style="flex:1" onclick="revealWord()">🎉 Avslöja</button>
+          <button class="btn btn-red" style="flex:1" onclick="resetTwenty()">🔄 Nytt ord</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── CHALLENGE ───── -->
+  <div class="panel" id="panel-challenge">
+    <div class="card">
+      <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--accent);margin-bottom:6px">🎲 Slumpa Utmaning</div>
+      <div style="text-align:center;font-size:0.85rem;color:#888;margin-bottom:16px">Törs du? Tryck och se vad som händer!</div>
+      <div class="challenge-display" id="challenge-display">
+        <div class="challenge-emoji" id="ch-emoji">🎲</div>
+        <div class="challenge-text" id="ch-text">Tryck nedan för en utmaning!</div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-red" style="flex:1" onclick="newChallenge()">🎲 Ny utmaning</button>
+        <button class="btn btn-green" style="flex:1" id="done-btn" onclick="markDone()" style="display:none">✅ Klar!</button>
+      </div>
+      <div id="score-row" style="text-align:center;margin-top:14px;font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--purple)">
+        Klarade utmaningar: <span id="ch-score">0</span> 🏆
+      </div>
+    </div>
+    <div class="card" style="font-size:0.85rem;color:#666">
+      <b>Tips:</b> Turas om! Den som klarar flest utmaningar när ni är framme vinner priset 🥇
+    </div>
+  </div>
+
+  <!-- ───── TRIVIA ───── -->
+  <div class="panel" id="panel-trivia">
+    <div class="card">
+      <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--purple);margin-bottom:10px">🧠 Resevett-Trivia</div>
+      <div class="trivia-score" id="trivia-score">Poäng: 0 / 0</div>
+      <div class="trivia-feedback" id="trivia-feedback"></div>
+      <div class="trivia-q" id="trivia-q">Laddar fråga...</div>
+      <div class="trivia-options" id="trivia-opts"></div>
+      <div class="center">
+        <button class="btn btn-purple" id="next-btn" onclick="nextTrivia()" style="display:none">Nästa fråga →</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ───── ORDSALLAD ───── -->
+  <div class="panel" id="panel-word">
+    <div class="card">
+      <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:1.4rem;color:#F59E0B;margin-bottom:4px">🔤 Ordsallad</div>
+      <div style="text-align:center;font-size:0.83rem;color:#888;margin-bottom:14px">Gissa ordet! Bokstäverna är i fel ordning.</div>
+      <div id="word-category" style="text-align:center;font-size:0.8rem;font-weight:700;color:#aaa;letter-spacing:1px;margin-bottom:6px">KATEGORI</div>
+      <div id="word-scrambled" style="text-align:center;font-family:'Fredoka One',cursive;font-size:2rem;color:var(--text);letter-spacing:6px;margin-bottom:6px;min-height:50px"></div>
+      <div id="word-hint" style="text-align:center;font-size:0.82rem;color:#bbb;margin-bottom:16px;min-height:18px"></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input id="word-input" type="text" placeholder="Ditt svar..." style="flex:1;border:2px solid #ddd;border-radius:12px;padding:10px 14px;font-family:'Nunito',sans-serif;font-size:1rem" onkeydown="if(event.key==='Enter')checkWord()">
+        <button class="btn btn-green" onclick="checkWord()">✓</button>
+      </div>
+      <div id="word-feedback" style="text-align:center;font-weight:800;font-size:1rem;min-height:22px;margin-bottom:10px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-blue" style="flex:1" onclick="newWord()">⏭ Nytt ord</button>
+        <button class="btn" style="flex:1;background:#f5f0ff;color:#7c3aed;box-shadow:none;border:2px solid #7c3aed" onclick="revealWordHint()">💡 Ledtråd</button>
+      </div>
+      <div style="text-align:center;margin-top:12px;font-family:'Fredoka One',cursive;font-size:1rem;color:var(--grass)">Rätt: <span id="word-score">0</span> &nbsp;|&nbsp; <span style="color:var(--accent)">Fel: <span id="word-wrong">0</span></span></div>
+    </div>
+  </div>
+
+  <!-- ───── ALDRIG HAR JAG ───── -->
+  <div class="panel" id="panel-never">
+    <div class="card">
+      <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:1.4rem;color:#EC4899;margin-bottom:4px">🙈 Aldrig har jag…</div>
+      <div style="text-align:center;font-size:0.83rem;color:#888;margin-bottom:16px">Dra ett påstående. Den som GJORT det sätter upp ett finger. Tio fingrar = ute!</div>
+      <div id="never-card" style="background:linear-gradient(135deg,#EC4899,#F43F5E);border-radius:18px;padding:28px 20px;text-align:center;min-height:110px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+        <div id="never-text" style="font-family:'Fredoka One',cursive;font-size:1.25rem;color:white;line-height:1.4">Tryck nedan för ett påstående!</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn" style="flex:1;background:#FFF0F5;color:#EC4899;border:2px solid #EC4899;box-shadow:none" onclick="newNever('mild')">🌸 Lagom</button>
+        <button class="btn" style="flex:1;background:#FFF0F5;color:#F43F5E;border:2px solid #F43F5E;box-shadow:none" onclick="newNever('spicy')">🌶️ Vågad</button>
+      </div>
+      <div id="never-count" style="text-align:center;font-size:0.85rem;color:#aaa">Dragna kort: <span id="n-count">0</span></div>
+    </div>
+  </div>
+
+  <!-- ───── RITA DET! ───── -->
+  <div class="panel" id="panel-draw">
+    <div class="card">
+      <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:1.4rem;color:#0EA5E9;margin-bottom:4px">✏️ Rita det!</div>
+      <div style="text-align:center;font-size:0.83rem;color:#888;margin-bottom:14px">En ritar, resten gissar! 60 sekunder på klockan.</div>
+      <div id="draw-word-box" style="background:linear-gradient(135deg,#0EA5E9,#6366F1);border-radius:14px;padding:16px;text-align:center;margin-bottom:12px">
+        <div style="font-size:0.8rem;color:rgba(255,255,255,0.7);margin-bottom:4px">RITA DET HÄR:</div>
+        <div id="draw-word" style="font-family:'Fredoka One',cursive;font-size:2rem;color:white">?</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div id="draw-timer" style="font-family:'Fredoka One',cursive;font-size:2.5rem;color:var(--accent)">60</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-blue" onclick="startDrawTimer()">▶ Start</button>
+          <button class="btn" style="background:#eee;color:#555;box-shadow:none" onclick="stopDrawTimer()">⏹</button>
+        </div>
+      </div>
+      <canvas id="draw-canvas" width="460" height="260" style="width:100%;border:2px solid #e0ddd0;border-radius:14px;background:white;touch-action:none;cursor:crosshair"></canvas>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn btn-green" style="flex:1" onclick="newDrawWord()">🎲 Nytt ord</button>
+        <button class="btn" style="flex:1;background:#eee;color:#555;box-shadow:none" onclick="clearCanvas()">🗑 Rensa</button>
+        <select id="draw-color" onchange="changeColor(this.value)" style="border:2px solid #ddd;border-radius:10px;padding:8px;font-size:1rem">
+          <option value="#1a1a2e">✏️ Svart</option>
+          <option value="#FF6B6B">🔴 Röd</option>
+          <option value="#3B9EFF">🔵 Blå</option>
+          <option value="#5EC96E">🟢 Grön</option>
+          <option value="#FFD94A">🟡 Gul</option>
+        </select>
+        <select id="draw-size" onchange="changeSize(this.value)" style="border:2px solid #ddd;border-radius:10px;padding:8px;font-size:1rem">
+          <option value="3">Tunn</option>
+          <option value="6" selected>Normal</option>
+          <option value="14">Tjock</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// BINGO
+// ═══════════════════════════════════════
+const BINGO_ITEMS = [
+  {e:'🚜',t:'Traktor'},{e:'🐄',t:'Ko'},{e:'⛽',t:'Bensinstation'},{e:'🌲',t:'Skog'},
+  {e:'🌊',t:'Sjö/hav'},{e:'🌉',t:'Bro'},{e:'🚛',t:'Lastbil'},{e:'☁️',t:'Moln'},
+  {e:'🏘️',t:'By'},{e:'🐑',t:'Får'},{e:'⛪',t:'Kyrka'},{e:'🏗️',t:'Bygge'},
+  {e:'🚌',t:'Buss'},{e:'🌻',t:'Blomma'},{e:'🚂',t:'Tåg'},{e:'🌄',t:'Berg'},
+  {e:'🦅',t:'Fågel'},{e:'🚗',t:'Röd bil'},{e:'🐴',t:'Häst'},{e:'⚡',t:'Vindkraft'},
+  {e:'🏪',t:'Affär'},{e:'🐦',t:'Skarv'},{e:'🌈',t:'Regnbåge'},{e:'⛺',t:'Camping'},
+];
+
+let bingoChecked = new Array(16).fill(false);
+let bingoItems = [];
+
+function shuffle(arr) { return [...arr].sort(()=>Math.random()-0.5); }
+
+function setupBingo() {
+  bingoItems = shuffle(BINGO_ITEMS).slice(0,16);
+  bingoChecked = new Array(16).fill(false);
+  document.getElementById('bingo-banner').classList.remove('show');
+  renderBingo();
+}
+
+function renderBingo() {
+  const grid = document.getElementById('bingo-grid');
+  grid.innerHTML = '';
+  bingoItems.forEach((item,i) => {
+    const cell = document.createElement('div');
+    cell.className = 'bingo-cell' + (bingoChecked[i] ? ' checked' : '');
+    cell.innerHTML = `<span class="cell-emoji">${item.e}</span>${item.t}`;
+    cell.onclick = () => toggleBingo(i);
+    grid.appendChild(cell);
+  });
+  const cnt = bingoChecked.filter(Boolean).length;
+  document.getElementById('bingo-count').textContent = `${cnt} / 16 markerade`;
+  checkBingo();
+}
+
+function toggleBingo(i) {
+  bingoChecked[i] = !bingoChecked[i];
+  renderBingo();
+}
+
+function checkBingo() {
+  const wins = [
+    [0,1,2,3],[4,5,6,7],[8,9,10,11],[12,13,14,15],
+    [0,4,8,12],[1,5,9,13],[2,6,10,14],[3,7,11,15],
+    [0,5,10,15],[3,6,9,12]
+  ];
+  for(const line of wins){
+    if(line.every(i => bingoChecked[i])){
+      document.getElementById('bingo-banner').classList.add('show');
+      return;
+    }
+  }
+}
+
+function resetBingo() { setupBingo(); }
+
+// ═══════════════════════════════════════
+// SPY
+// ═══════════════════════════════════════
+const SPY_LOCATIONS = [
+  {place:'✈️ Flygplats', roles:['Pilot','Passagerare','Säkerhetsvakt','Tulltjänsteman','Städare','Bagagehanterare','Flygvärdinna','Tullinspektör']},
+  {place:'🍕 Restaurang', roles:['Kock','Servitör','Kassörska','Krogchef','Matrecensent','Diskare','Sommelier','Stammis']},
+  {place:'🏖️ Strand', roles:['Livräddare','Turist','Hotellgäst','Glasskiosk-ägare','Fotograf','Surfläraree','Parasoll-hyra','Strandstädare']},
+  {place:'🏥 Sjukhus', roles:['Läkare','Sjuksköterska','Patient','Städare','Besökare','Röntgenläkare','Ambulansförare','Receptionist']},
+  {place:'🚂 Tåg', roles:['Konduktör','Turist','Pendlare','Polis','Städare','Tågförare','Restaurangvagns-kock','Backpacker']},
+  {place:'🎠 Nöjespark', roles:['Åkoperatör','Besökare','Maskot','Säkerhetsvakt','Städare','Glasskiosk-anställd','Parkdirektör','Underhållare']},
+  {place:'🏫 Skola', roles:['Lärare','Elev','Rektor','Vaktmästare','Förälder','Skolsyster','Vikarie','Skolkock']},
+  {place:'🎬 Filminspelning', roles:['Regissör','Skådespelare','Sminkör','Kameraoperatör','Statistiker','Manusförfattare','Ljussättare','Produktionsassistent']},
+  {place:'⛵ Kryssningsskepp', roles:['Kapten','Turist','Bartender','Städare','Underhållare','Navigationsofficer','Kock','Reseledare']},
+  {place:'🏕️ Sommarläger', roles:['Ledare','Deltagare','Kock','Sanitetsansvarig','Sjuksyster','Simtränare','Naturguide','Städare']},
+  {place:'🏰 Slott', roles:['Guide','Turist','Vakt','Historiker','Fotograf','Restaurerare','Arkeolog','Kaféanställd']},
+  {place:'🎪 Cirkus', roles:['Akrobat','Clown','Djurtränare','Publikmedlem','Ringmaster','Tekniker','Kassör','Städare']},
+  {place:'🚀 Rymdstation', roles:['Astronaut','Tekniker','Läkare','Kommendant','Rymdturist','Forskare','Kock','Ingenjör']},
+  {place:'🏦 Bank', roles:['Banktjänsteman','Kund','Säkerhetsvakt','Direktör','Revisor','Städare','Lånekonsult','Kassör']},
+  {place:'🎭 Teater', roles:['Skådespelare','Regissör','Sminkör','Publik','Biljettförsäljare','Scentekniker','Dramaturug','Garderobian']},
+  {place:'🏋️ Gym', roles:['Personlig tränare','Medlem','Receptionist','Städare','Instruktör','Näringskonsult','Massör','Ägare']},
+  {place:'🐬 Djurpark', roles:['Djurvårdare','Turist','Guide','Veterinär','Fotograf','Kassör','Städare','Parkchef']},
+  {place:'⛏️ Gruva', roles:['Gruvarbetare','Ingenjör','Säkerhetsinspektör','Geolog','Sprängtekniker','Maskinist','Elektriker','Förman']},
+  {place:'🧪 Laboratorium', roles:['Forskare','Laborant','Doktorand','Städare','Säkerhetsvakt','Professor','Praktikant','Teknik-support']},
+  {place:'🛒 Köpcentrum', roles:['Butiksanställd','Shoppare','Vakt','Städare','Kafébiträde','Butikschef','Lageransvarig','Information']},
+];
+
+let spyQueue = [];
+let spyLoc = null;
+let playerCount = 0;
+let totalPlayers = 4;
+
+function drawSpy() {
+  if(spyQueue.length === 0) {
+    spyLoc = SPY_LOCATIONS[Math.floor(Math.random()*SPY_LOCATIONS.length)];
+    // Shuffle roles and pick one per non-spy player
+    const roles = shuffle([...spyLoc.roles]);
+    const spyPos = Math.floor(Math.random()*totalPlayers);
+    let roleIndex = 0;
+    spyQueue = Array.from({length:totalPlayers}, (_,i) => {
+      if(i === spyPos) return {isSpy:true};
+      return {isSpy:false, role: roles[roleIndex++]};
+    });
+    spyQueue = shuffle(spyQueue);
+    playerCount = 0;
+  }
+  const current = spyQueue[playerCount++];
+  const el = document.getElementById('spy-result');
+  if(current.isSpy){
+    el.innerHTML = `<div><div class="role">🕵️ DU ÄR SPIONEN!</div><div class="location" style="color:#FFD94A;margin-top:6px">Försök lista ut platsen!</div></div>`;
+    el.style.background = 'linear-gradient(135deg,#FF6B6B,#FF8E53)';
+  } else {
+    el.innerHTML = `<div><div class="role">${current.role}</div><div class="location">${spyLoc.place}</div></div>`;
+    el.style.background = 'linear-gradient(135deg,#667eea,#764ba2)';
+  }
+  document.getElementById('spy-players').innerHTML = playerCount < totalPlayers
+    ? `<div style="text-align:center;font-size:0.85rem;color:#888">Spelare ${playerCount}/${totalPlayers} har sett sitt kort</div>`
+    : `<div style="text-align:center;font-weight:800;color:var(--grass)">Alla ${totalPlayers} spelare klara! Sätt igång! 🎉<br><button class="btn btn-blue" onclick="spyQueue=[];playerCount=0;document.getElementById('spy-players').innerHTML=''" style="margin-top:8px">Ny omgång</button></div>`;
+}
+
+// ═══════════════════════════════════════
+// 20 FRÅGOR
+// ═══════════════════════════════════════
+const WORD_LISTS = {
+  djur: ['Elefant','Pingvin','Känguru','Bläckfisk','Flamingo','Järv','Snigel','Delfin','Struds','Fjäril'],
+  mat:  ['Pizza','Sushi','Köttbullar','Waffle','Bananmilkshake','Tacos','Kladdkaka','Hummus','Räkmacka','Smörgåstårta'],
+  platser:['Nordpolen','Sahara','Eiffeltornet','Amazonas','Las Vegas','Antarktis','Trosa','Angkor Wat','Pompeji','Machu Picchu'],
+  föremål:['Kikare','Paraply','Timglas','Trollspö','Kompass','Vattenpistol','Trampolin','Megafon','Kaleidoskop','Lupp'],
+};
+
+let qCount = 0;
+let currentWord = '';
+let currentCat = '';
+
+function startTwenty(cat) {
+  const list = cat==='random'
+    ? Object.values(WORD_LISTS).flat()
+    : WORD_LISTS[cat];
+  currentWord = list[Math.floor(Math.random()*list.length)];
+  currentCat = cat==='random' ? '🎲 Slumpat' : {djur:'🐾 Djur',mat:'🍕 Mat',platser:'🗺️ Platser',föremål:'🔑 Föremål'}[cat];
+  qCount = 0;
+  document.getElementById('q-list').innerHTML = '';
+  document.getElementById('q-count').textContent = '0';
+  document.getElementById('twenty-word').textContent = '? ? ?';
+  document.getElementById('twenty-cat').textContent = currentCat;
+  document.getElementById('twenty-setup').style.display='none';
+  document.getElementById('twenty-game').style.display='block';
+  document.getElementById('currentQ').value='';
+}
+
+function logAnswer(ans) {
+  if(qCount>=20) return;
+  const q = document.getElementById('currentQ').value.trim();
+  if(!q) return;
+  qCount++;
+  const li = document.createElement('li');
+  li.innerHTML = `<span class="q-num">${qCount}</span><span>${q} — <b>${ans}</b></span>`;
+  document.getElementById('q-list').prepend(li);
+  document.getElementById('q-count').textContent = qCount;
+  document.getElementById('currentQ').value='';
+  if(qCount>=20) alert('20 frågor använda! Dags att gissa!');
+}
+
+function revealWord() {
+  document.getElementById('twenty-word').textContent = currentWord;
+}
+
+function resetTwenty() {
+  document.getElementById('twenty-setup').style.display='block';
+  document.getElementById('twenty-game').style.display='none';
+}
+
+// ═══════════════════════════════════════
+// CHALLENGE
+// ═══════════════════════════════════════
+const CHALLENGES = [
+  {e:'🤣',t:'Berätta det sämsta skämt du kan'},
+  {e:'🎵',t:'Sjung refrängen till en låt utan ord – bara "lalla"'},
+  {e:'😱',t:'Hitta på ett filmnamn med djur och mat i titeln'},
+  {e:'🤸',t:'Räkna upp 10 länder på under 15 sekunder'},
+  {e:'🦆',t:'Imma ett djur tills någon gissar vilket det är'},
+  {e:'🕵️',t:'Beskriv personen till vänster om dig som om du läste från ett pass'},
+  {e:'🎭',t:'Agera ut en känsla – de andra gissar vilken'},
+  {e:'📍',t:'Peka ut 3 länder på en imaginär världskarta på fönstret'},
+  {e:'🧠',t:'Räkna bakåt från 50 med 3:or (50, 47, 44…)'},
+  {e:'🐟',t:'Nämn 10 fiskarter på 20 sekunder'},
+  {e:'💃',t:'Gör en 5 sekunder lång dansmove – alla upprepar den'},
+  {e:'🗣️',t:'Säg en mening baklänges (sista ordet först)'},
+  {e:'🎨',t:'Rita ett djur med pekfingret i luften – de andra gissar'},
+  {e:'🤔',t:'Nämn 5 saker som är blå utanför fönstret'},
+  {e:'👏',t:'Klappa ett känt reklam-jingel – de andra gissar vilket märke'},
+  {e:'🌍',t:'Nämn en stad i varje världsdel (7 st)'},
+  {e:'🎤',t:'Improvisera en 3-menings rap om bilen/tåget ni åker i'},
+  {e:'😄',t:'Håll ett allvarligt ansiktsuttryck i 30 sekunder medan alla stirrar'},
+  {e:'🔤',t:'Säg alfabetet baklänges så fort du kan'},
+  {e:'🦁',t:'Nämn 5 djur vars namn börjar på samma bokstav'},
+];
+
+let chScore = 0;
+let lastChallenge = null;
+
+function newChallenge() {
+  let c;
+  do { c = CHALLENGES[Math.floor(Math.random()*CHALLENGES.length)]; } while(c===lastChallenge);
+  lastChallenge = c;
+  document.getElementById('ch-emoji').textContent = c.e;
+  document.getElementById('ch-text').textContent = c.t;
+  document.getElementById('done-btn').style.display='inline-block';
+  document.getElementById('challenge-display').style.background='linear-gradient(135deg,#FF6B6B,#FF8E53)';
+}
+
+function markDone() {
+  chScore++;
+  document.getElementById('ch-score').textContent = chScore;
+  document.getElementById('challenge-display').style.background='linear-gradient(135deg,#5EC96E,#3BB55A)';
+  document.getElementById('ch-text').textContent = '✅ Bra jobbat! Dra en ny!';
+  document.getElementById('ch-emoji').textContent = '🏆';
+  document.getElementById('done-btn').style.display='none';
+}
+
+// ═══════════════════════════════════════
+// TRIVIA
+// ═══════════════════════════════════════
+const TRIVIA = [
+  {q:'Vilket land har flest öar i världen?',opts:['Sverige','Indonesien','Kanada','Filippinerna'],a:0,f:'Sverige har ca 220 000 öar – fler än något annat land!'},
+  {q:'Vilket hav är det djupaste?',opts:['Atlanten','Arktiska ishavet','Indiska oceanen','Stilla havet'],a:3,f:'Stilla havet rymmer Mariannergraven – 11 km djup!'},
+  {q:'Vilken stad är känd som "Världens navel" av inkafolket?',opts:['Lima','Cusco','Bogotá','Quito'],a:1,f:'Cusco i Peru var inkaimperiets huvudstad och kallades "Qusqu" – navel.'},
+  {q:'I vilket land finns Sahara störst andel?',opts:['Algeriet','Egypten','Sudan','Niger'],a:0,f:'Algeriet täcker ca 80% av sahara och är Afrikas största land.'},
+  {q:'Hur många länder delar gräns med Kina?',opts:['12','14','10','16'],a:1,f:'Kina har 14 grannländer – flest i världen!'},
+  {q:'Vilken är Europas längsta flod?',opts:['Rhen','Donau','Volga','Seine'],a:2,f:'Volga, 3 531 km, är Europas längsta flod och rinner genom Ryssland.'},
+  {q:'Vad heter den internationella flygplatsen i Tokyo?',opts:['Narita','Haneda','Osaka','Kansai'],a:0,f:'Tokyo Narita International Airport är huvudflygplatsen för internationella flyg.'},
+  {q:'Vilket land uppfann passet?',opts:['USA','Frankrike','England','Sverige'],a:2,f:'England utfärdade de första moderna passen på 1400-talet.'},
+  {q:'Hur många tidszoner finns det i Ryssland?',opts:['9','11','7','13'],a:1,f:'Ryssland sträcker sig över 11 tidszoner!'},
+  {q:'I vilken stad finns Colosseum?',opts:['Aten','Madrid','Rom','Neapel'],a:2,f:'Colosseum i Rom byggdes år 70-80 e.Kr. och rymde 50 000–80 000 åskådare.'},
+];
+
+let triviaIndex = 0;
+let triviaScore = 0;
+let triviaTotal = 0;
+let triviaAnswered = false;
+let triviaOrder = [];
+
+function initTrivia() {
+  triviaOrder = shuffle([...Array(TRIVIA.length).keys()]);
+  triviaIndex = 0; triviaScore = 0; triviaTotal = 0;
+  showTrivia();
+}
+
+function showTrivia() {
+  if(triviaIndex >= triviaOrder.length) {
+    document.getElementById('trivia-q').textContent = 'Du har svarat på alla frågor!';
+    document.getElementById('trivia-opts').innerHTML = `<button class="btn btn-purple" onclick="initTrivia()">🔄 Börja om</button>`;
+    document.getElementById('next-btn').style.display='none';
+    document.getElementById('trivia-feedback').textContent='';
+    return;
+  }
+  const item = TRIVIA[triviaOrder[triviaIndex]];
+  triviaAnswered = false;
+  document.getElementById('trivia-q').textContent = item.q;
+  document.getElementById('trivia-feedback').textContent = '';
+  document.getElementById('next-btn').style.display='none';
+  const opts = document.getElementById('trivia-opts');
+  opts.innerHTML = '';
+  item.opts.forEach((opt,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'trivia-opt';
+    btn.textContent = opt;
+    btn.onclick = () => answerTrivia(i, item.a, item.f);
+    opts.appendChild(btn);
+  });
+}
+
+function answerTrivia(chosen, correct, fact) {
+  if(triviaAnswered) return;
+  triviaAnswered = true;
+  triviaTotal++;
+  const opts = document.getElementById('trivia-opts').children;
+  opts[correct].classList.add('correct');
+  if(chosen !== correct) {
+    opts[chosen].classList.add('wrong');
+    document.getElementById('trivia-feedback').innerHTML = `<span style="color:var(--accent)">❌ Fel! ${fact}</span>`;
+  } else {
+    triviaScore++;
+    document.getElementById('trivia-feedback').innerHTML = `<span style="color:var(--grass)">✅ Rätt! ${fact}</span>`;
+  }
+  document.getElementById('trivia-score').textContent = `Poäng: ${triviaScore} / ${triviaTotal}`;
+  document.getElementById('next-btn').style.display='inline-block';
+}
+
+function nextTrivia() { triviaIndex++; showTrivia(); }
+
+function changePlayerCount(delta) {
+  totalPlayers = Math.min(8, Math.max(2, totalPlayers + delta));
+  document.getElementById('player-count-display').textContent = totalPlayers;
+  // Reset queue when count changes
+  spyQueue = [];
+  playerCount = 0;
+  document.getElementById('spy-players').innerHTML = '';
+  document.getElementById('spy-result').innerHTML = `<div><div class="role" style="color:#ccc">Tryck för att börja</div></div>`;
+  document.getElementById('spy-result').style.background = 'linear-gradient(135deg,#667eea,#764ba2)';
+}
+
+
+// ═══════════════════════════════════════
+// ORDSALLAD
+// ═══════════════════════════════════════
+const WORD_DATA = [
+  {w:'ELEFANT',c:'Djur',h:'Störst på land'},
+  {w:'PIZZA',c:'Mat',h:'Italiensk klassiker'},
+  {w:'FLYGPLAN',c:'Transport',h:'Flyger på himlen'},
+  {w:'REGNBAGE',c:'Natur',h:'Efter regnet'},
+  {w:'FYRTORN',c:'Byggnader',h:'Visar vägen för båtar'},
+  {w:'GITARR',c:'Musik',h:'Stränginstrument'},
+  {w:'SPINDEL',c:'Djur',h:'Åtta ben'},
+  {w:'CHOKLAD',c:'Mat',h:'Görs av kakao'},
+  {w:'VULKAN',c:'Natur',h:'Sprutar lava'},
+  {w:'DELFIN',c:'Djur',h:'Smart havsdäggdjur'},
+  {w:'SOLROS',c:'Växter',h:'Gul och stor'},
+  {w:'PINGVIN',c:'Djur',h:'Fågel som inte flyger'},
+  {w:'KAMEL',c:'Djur',h:'Öknens skepp'},
+  {w:'KETCHUP',c:'Mat',h:'Röd sås till pommes'},
+  {w:'KOMPASS',c:'Verktyg',h:'Pekar mot norr'},
+  {w:'LABYRINT',c:'Övrigt',h:'Hitta ut om du kan!'},
+  {w:'TRUMPET',c:'Musik',h:'Blåsinstrument av mässing'},
+  {w:'HAMMARE',c:'Verktyg',h:'Slår i spikar'},
+  {w:'ISBJORN',c:'Djur',h:'Vit björn på Arktis'},
+  {w:'SPAGHETTI',c:'Mat',h:'Långa italienska nudlar'},
+  {w:'BALLONG',c:'Övrigt',h:'Flyger med helium'},
+  {w:'FJÄRIL',c:'Djur',h:'Börjar som larv'},
+  {w:'PARAPLY',c:'Kläder',h:'Skyddar mot regn'},
+  {w:'DINOSAURIE',c:'Djur',h:'Utdött kräldjur'},
+  {w:'KAKTUS',c:'Växter',h:'Prickig ökenväxt'},
+];
+let wordScore = 0, wordWrong = 0;
+let currentWordData = null;
+let hintShown = false;
+
+function scramble(word) {
+  let a = word.split('');
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  if(a.join('')===word && word.length>1) return scramble(word);
+  return a.join('');
+}
+
+function newWord() {
+  currentWordData = WORD_DATA[Math.floor(Math.random()*WORD_DATA.length)];
+  hintShown = false;
+  document.getElementById('word-category').textContent = currentWordData.c.toUpperCase();
+  document.getElementById('word-scrambled').textContent = scramble(currentWordData.w);
+  document.getElementById('word-hint').textContent = '';
+  document.getElementById('word-feedback').textContent = '';
+  document.getElementById('word-input').value = '';
+}
+
+function checkWord() {
+  if(!currentWordData) return;
+  const val = document.getElementById('word-input').value.trim().toUpperCase();
+  const fb = document.getElementById('word-feedback');
+  if(val === currentWordData.w) {
+    wordScore++;
+    document.getElementById('word-score').textContent = wordScore;
+    fb.innerHTML = '<span style="color:var(--grass)">✅ Rätt! Det var ' + currentWordData.w + '!</span>';
+    setTimeout(newWord, 1200);
+  } else {
+    wordWrong++;
+    document.getElementById('word-wrong').textContent = wordWrong;
+    fb.innerHTML = '<span style="color:var(--accent)">❌ Försök igen!</span>';
+    document.getElementById('word-input').value = '';
+  }
+}
+
+function revealWordHint() {
+  if(!currentWordData) return;
+  if(!hintShown) {
+    document.getElementById('word-hint').textContent = '💡 Ledtråd: ' + currentWordData.h;
+    hintShown = true;
+  } else {
+    document.getElementById('word-hint').textContent = '💡 Svar: ' + currentWordData.w;
+  }
+}
+
+// ═══════════════════════════════════════
+// ALDRIG HAR JAG
+// ═══════════════════════════════════════
+const NEVER_MILD = [
+  'ätit mat från golvet','somnat på en fest','sjungit i duschen',
+  'glömt en väns födelsedag','åkt fel buss och hamnat någon annanstans',
+  'skrattat så jag grät','köpt något jag aldrig använt',
+  'lekt sjuk för att slippa jobba eller skolan','gömt mig i garderoben som vuxen',
+  'skickat ett meddelande till fel person','fastnat i en hiss',
+  'gillat en låt jag hatade från början','ätit hela en chipspåse på en gång',
+  'sett en film mer än 5 gånger','kört fast med bilen i snön',
+  'glömt var jag parkerade bilen','blivit fotad i en pinsam stund',
+  'missat ett flyg eller tåg','lagat mat och bränt det totalt',
+  'somnat på bussen och missat min hållplats',
+];
+const NEVER_SPICY = [
+  'ljugit för att komma undan straff som barn','haft krossad på en lärare',
+  'stulit godis som liten','trillat handlöst inför en publik',
+  'dansat på ett bord','ringt fel person och pratat länge innan jag märkt det',
+  'tappat telefonen i toaletten','erkänt en kärlek och blivit avvisad',
+  'smygätit andras mat i kylen','fejkat att jag kände igen någon',
+  'ljugit om min ålder','googlat mig själv',
+  'snackat skit om någon och sen insett de stod bakom mig',
+  'fejkat ett telefonsamtal för att komma undan',
+  'fångat en spindel med bara händerna','hoppat i en fontän i en stad',
+  'blivit pinsam utomlands','fått panik och sprungit från en situation',
+  'gjort en dans challenge och lagt upp det online',
+  'hållit ett tal efter för mycket festdricka',
+];
+let neverCount = 0;
+let neverUsed = {mild:[], spicy:[]};
+
+function newNever(type) {
+  const list = type==='mild' ? NEVER_MILD : NEVER_SPICY;
+  const used = neverUsed[type];
+  if(used.length >= list.length) used.length = 0;
+  let idx;
+  do { idx = Math.floor(Math.random()*list.length); } while(used.includes(idx) && used.length < list.length);
+  used.push(idx);
+  neverCount++;
+  document.getElementById('never-text').textContent = 'Aldrig har jag… ' + list[idx];
+  document.getElementById('n-count').textContent = neverCount;
+  document.getElementById('never-card').style.background = type==='mild'
+    ? 'linear-gradient(135deg,#EC4899,#F43F5E)'
+    : 'linear-gradient(135deg,#F97316,#EF4444)';
+}
+
+// ═══════════════════════════════════════
+// RITA DET!
+// ═══════════════════════════════════════
+const DRAW_WORDS = [
+  {w:'Elefant',c:'Djur'},{w:'Cykel',c:'Transport'},{w:'Regnbage',c:'Natur'},
+  {w:'Pizza',c:'Mat'},{w:'Fyrtorn',c:'Byggnader'},{w:'Gitarr',c:'Musik'},
+  {w:'Spindelnät',c:'Natur'},{w:'Vulkan',c:'Natur'},{w:'Isbjörn',c:'Djur'},
+  {w:'Kamel',c:'Djur'},{w:'Paraply',c:'Kläder'},{w:'Ballong',c:'Övrigt'},
+  {w:'Robot',c:'Övrigt'},{w:'Kanin',c:'Djur'},{w:'Solros',c:'Växter'},
+  {w:'Ubåt',c:'Transport'},{w:'Delfin',c:'Djur'},{w:'Trampolin',c:'Sport'},
+  {w:'Svärd',c:'Övrigt'},{w:'Kaktus',c:'Växter'},{w:'Igloo',c:'Byggnader'},
+  {w:'Dinosaurie',c:'Djur'},{w:'Kopp kaffe',c:'Mat'},{w:'Skateboard',c:'Sport'},
+  {w:'Uggla',c:'Djur'},{w:'Hammare',c:'Verktyg'},{w:'Fyr',c:'Byggnader'},
+  {w:'Fyrkant',c:'Form'},{w:'Enhörning',c:'Djur'},{w:'Snögubbe',c:'Övrigt'},
+];
+let drawTimer = null;
+let drawSeconds = 60;
+let drawColor = '#1a1a2e';
+let drawSize = 6;
+let isDrawing = false;
+let lastX = 0, lastY = 0;
+
+function newDrawWord() {
+  const item = DRAW_WORDS[Math.floor(Math.random()*DRAW_WORDS.length)];
+  document.getElementById('draw-word').textContent = item.w;
+  stopDrawTimer();
+  drawSeconds = 60;
+  document.getElementById('draw-timer').textContent = '60';
+  document.getElementById('draw-timer').style.color = 'var(--accent)';
+  clearCanvas();
+}
+
+function startDrawTimer() {
+  stopDrawTimer();
+  drawTimer = setInterval(function() {
+    drawSeconds--;
+    const el = document.getElementById('draw-timer');
+    el.textContent = drawSeconds;
+    el.style.color = drawSeconds <= 10 ? '#EF4444' : 'var(--accent)';
+    if(drawSeconds <= 0) { stopDrawTimer(); el.textContent = '⏰'; }
+  }, 1000);
+}
+
+function stopDrawTimer() {
+  if(drawTimer) { clearInterval(drawTimer); drawTimer = null; }
+}
+
+function clearCanvas() {
+  const c = document.getElementById('draw-canvas');
+  if(!c) return;
+  c.getContext('2d').clearRect(0,0,c.width,c.height);
+}
+
+function changeColor(v) { drawColor = v; }
+function changeSize(v) { drawSize = parseInt(v); }
+
+function initCanvas() {
+  const canvas = document.getElementById('draw-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const sx = canvas.width/r.width, sy = canvas.height/r.height;
+    const src = e.touches ? e.touches[0] : e;
+    return {x:(src.clientX-r.left)*sx, y:(src.clientY-r.top)*sy};
+  }
+  function startDraw(e){e.preventDefault();isDrawing=true;const p=getPos(e);lastX=p.x;lastY=p.y;}
+  function draw(e){
+    if(!isDrawing)return;e.preventDefault();
+    const p=getPos(e);
+    ctx.beginPath();ctx.moveTo(lastX,lastY);ctx.lineTo(p.x,p.y);
+    ctx.strokeStyle=drawColor;ctx.lineWidth=drawSize;ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.stroke();lastX=p.x;lastY=p.y;
+  }
+  function stopDraw(){isDrawing=false;}
+  canvas.addEventListener('mousedown',startDraw);
+  canvas.addEventListener('mousemove',draw);
+  canvas.addEventListener('mouseup',stopDraw);
+  canvas.addEventListener('mouseleave',stopDraw);
+  canvas.addEventListener('touchstart',startDraw,{passive:false});
+  canvas.addEventListener('touchmove',draw,{passive:false});
+  canvas.addEventListener('touchend',stopDraw);
+}
+
+// ═══════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+setupBingo();
+initTrivia();
+newWord();
+newDrawWord();
+setTimeout(initCanvas, 100);
+</script>
+</body>
+</html>
